@@ -1,0 +1,18 @@
+*.ipr
+*.iws
+*.iml
+*.class
+
+# ignore target directory.Don't ignore target files. 
+target/
+out/
+.idea/
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+#ignore all .jar files;
+*.jar
+*.war
+*.ear

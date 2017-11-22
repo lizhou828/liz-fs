@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>liz-fs</artifactId>
+        <groupId>com.liz</groupId>
+        <version>0.0.1</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>fs-webClient</artifactId>
+    <version>1.0.0</version>
+    <packaging>war</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.liz</groupId>
+            <artifactId>fs-fastdfs-core</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.liz</groupId>
+            <artifactId>fs-common-old</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+    <profiles>
+        <profile>
+            <id>DEV</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <propertie.log4j>DEBUG</propertie.log4j>
+                <propertie.system.fs>http://192.168.202.129</propertie.system.fs>
+                <propertie.fastdfs.tracker_servers>192.168.202.129:22122,192.168.202.130:22122</propertie.fastdfs.tracker_servers>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>QC</id>
+            <properties>
+                <propertie.log4j>INFO</propertie.log4j>
+                <propertie.system.fs>http://192.168.202.129</propertie.system.fs>
+                <propertie.fastdfs.tracker_servers>192.168.202.129:22122,192.168.202.130:22122</propertie.fastdfs.tracker_servers>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>YFB</id>
+            <properties>
+                <propertie.log4j>INFO</propertie.log4j>
+                <propertie.system.fs>http://fs.gr158.com</propertie.system.fs>
+                <propertie.fastdfs.tracker_servers>192.168.3.160:22122,192.168.3.161:22122</propertie.fastdfs.tracker_servers>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>SC</id>
+            <properties>
+                <propertie.log4j>WARN</propertie.log4j>
+                <propertie.system.fs>http://fs.gr158.com</propertie.system.fs>
+                <propertie.fastdfs.tracker_servers>192.168.3.160:22122,192.168.3.161:22122</propertie.fastdfs.tracker_servers>
+            </properties>
+        </profile>
+
+    </profiles>
+</project>

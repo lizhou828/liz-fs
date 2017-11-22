@@ -1,0 +1,112 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.liz</groupId>
+  <artifactId>liz-fs</artifactId>
+  <version>0.0.1</version>
+	<modules>
+		<module>fs-webClient</module>
+		<module>fs-fastdfs-core</module>
+		<module>fs-common</module>
+		<module>fs-common-old</module>
+	</modules>
+	<packaging>pom</packaging>
+  
+  <properties>
+		<version.junit>4.8</version.junit>
+		<version.commons-logging>1.2</version.commons-logging>
+		<version.slf4j-log4j12>1.7.5</version.slf4j-log4j12>
+		<version.commons-io>2.4</version.commons-io>
+		<version.commons-fileupload>1.3.1</version.commons-fileupload>
+		<!-- J2EE -->
+		<version.jsp>2.1</version.jsp>
+		<version.servlet>2.5</version.servlet>
+		<version.spring>4.1.3.RELEASE</version.spring>
+		<!-- hosted -->
+		<version.jh-framework-core>0.1.015.0601</version.jh-framework-core>
+		<!-- build -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<build.jdk>1.7</build.jdk>
+		<build.maven-compiler-plugin>2.5.1</build.maven-compiler-plugin>
+		<build.maven-resources-plugin>2.6</build.maven-resources-plugin>
+		<build.maven-surefire>2.10</build.maven-surefire>
+		<build.maven-jetty>7.1.6.v20100715</build.maven-jetty>
+		<build.maven-tomcat>1.1</build.maven-tomcat>
+	</properties>
+	<repositories>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${version.junit}</version>
+			<scope>test</scope>
+		</dependency>
+
+
+	</dependencies>
+	
+	<build>
+		<plugins>
+			<!-- 编译环境 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${build.maven-compiler-plugin}</version>
+				<configuration>
+					<source>${build.jdk}</source>
+					<target>${build.jdk}</target>
+					<encoding>${project.build.sourceEncoding}</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>${build.maven-resources-plugin}</version>
+				<configuration>
+					<encoding>${project.build.sourceEncoding}</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${build.maven-surefire}</version>
+				<configuration>
+					<testFailureIgnore>true</testFailureIgnore>
+					<excludes>
+						<exclude>**/*Test.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<!-- 运行容器 -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>tomcat-maven-plugin</artifactId>
+				<version>${build.maven-tomcat}</version>
+				<configuration>
+					<path>/</path>
+					<port>80</port>
+					<uriEncoding>${project.build.sourceEncoding}</uriEncoding>
+					<url>http://localhost/manager/html</url>
+					<server>tomcat6</server>
+				</configuration>
+			</plugin>
+		</plugins>
+
+	</build>
+
+	<!--项目的发布 配置-->
+	<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<!--此处的id 与maven配置文件中的server id 保持一致-->
+			<name>Nexus Release Repository</name>
+			<url>http://localhost:8081/nexus/content/repositories/releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>Nexus Snapshot Repository</name>
+			<url>http://localhost:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
+</project>
