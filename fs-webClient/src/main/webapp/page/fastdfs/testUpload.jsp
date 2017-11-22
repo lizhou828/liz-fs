@@ -45,9 +45,10 @@
             success: function (data, textStatus) {
                 data = JSON.parse(data);
                 if("SUCCESS" == data[0].code){
+                    setTimeout(alert("正在上传中，请稍后!"),3000);
                     $("#imgAfterUploaded").attr("src",data[0].url);
                     $("#imgAfterUploadedUrl").html(data[0].url);
-                    alert("上传成功! data=" + data + ",url = " + data[0].url);
+//                    alert("上传成功! data=" + data + ",url = " + data[0].url);
                 }else{
                     alert("上传失败! code=" + data[0].code);
                 }

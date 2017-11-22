@@ -18,7 +18,13 @@
 		<!-- 需要把controller去掉，否则影响事务管理 -->
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
 	</context:component-scan>
-		
+
+
+	<bean name="fastDfsUtil" class="com.liz.fs.fastdfs.utils.FastDfsUtil" init-method="init">
+		<property name="minPoolSize" value="${fastdfs.minPoolSize}" />
+		<property name="maxPoolSize" value="${fastdfs.maxPoolSize}" />
+		<property name="waitTimes" value="${fastdfs.waitTimes}" />
+	</bean>
 </beans>
 
 

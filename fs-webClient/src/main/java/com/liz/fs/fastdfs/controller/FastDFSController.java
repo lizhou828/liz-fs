@@ -10,9 +10,12 @@ package com.liz.fs.fastdfs.controller;
 import com.liz.fs.common.domain.UploadCode;
 import com.liz.fs.common.domain.UploadInfo;
 import com.liz.fs.common.utils.CommonUtil;
+import com.liz.fs.common.utils.FileHelper;
 import com.liz.fs.common.utils.PropertyUtil;
 import com.liz.fs.fastdfs.common.NameValuePair;
 import com.liz.fs.common.utils.StringUtil;
+import com.liz.fs.fastdfs.utils.FastDfsUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,7 +26,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,23 +38,26 @@ import java.util.List;
 @RequestMapping("/fastdfs")
 public class FastDFSController extends BaseFastDFSController {
 
+    @Autowired
+    private FastDfsUtil fastDfsUtil;
+
 
     @RequestMapping("/testUpload")
     public ModelAndView testUploadPage(){
         return new ModelAndView("/fastdfs/testUpload");
     }
 
+
     /**
-     *
-     * 简单的文件上传(支持表单提交的方式、ajax的方式)
-     *  e.g. : <input type="file" name="fsFile" />  name 属性必传
-     * @param files 待上传的文件
-     * @param groupName 组名可以为空(除非是已经知道 该组名在FastDFS服务器中 确实存在，否则不要传该参数)
-     * @return  上传后的文件信息
+     * FastDFS 使用连接池上传：
+     * 支持多并发、心跳检测
+     * @param files
+     * @param groupName
+     * @return
      */
     @RequestMapping(value = "/upload",method= RequestMethod.POST) //
     @ResponseBody
-    public List<UploadInfo> simple(@RequestParam(value = "fsFile") MultipartFile[] files,String groupName ,HttpServletRequest request){
+    public List<UploadInfo> upload(@RequestParam(value = "fsFile") MultipartFile[] files,String groupName,HttpServletRequest request){
         List<UploadInfo> uploadedFileList = new ArrayList<>();
         UploadInfo upload = null;
         String uploadedFileId = null;
@@ -65,24 +70,17 @@ public class FastDFSController extends BaseFastDFSController {
             return uploadedFileList;
         }
 
-        if(null == super.storageClient1 || null == super.trackerServer ){
-            logger.error("FastDFS has initialized failed!");
-            upload = new UploadInfo();
-            upload.setCode(UploadCode.ERROR);
-            uploadedFileList.add(upload);
-            return uploadedFileList;
-        }
 
-        NameValuePair[] metaList = new NameValuePair[1];
+
         String domainFS = PropertyUtil.getProperty("domain_fs");
+        NameValuePair[] metaList = new NameValuePair[1];
         try {
             for(MultipartFile file : files){
                 if(null == file) continue;
-                /* 以 byte 的方式上传（另外还以以file_name的方式上传） */
                 metaList[0] = new NameValuePair("fileName", file.getOriginalFilename());
-
+                /* 以 byte 的方式上传 */
                 fileExtName = StringUtil.getFileExtName(file.getOriginalFilename());
-                uploadedFileId = super.storageClient1.upload_file1(groupName,file.getBytes(), fileExtName , metaList);
+                uploadedFileId = fastDfsUtil.upload(groupName,file.getBytes(), fileExtName ,metaList);
                 if(StringUtil.isNotEmpty(uploadedFileId)){
                     upload = new UploadInfo();
                     upload.setCode(UploadCode.SUCCESS);
@@ -95,31 +93,25 @@ public class FastDFSController extends BaseFastDFSController {
                     upload.setSize(file.getSize());
                     uploadedFileList.add(upload);
 
-
-                    int width = 150;
-                    int length = 150;
+                    int width = DEFAULT_SMALL_IMG_WIDTH;
+                    int length = DEFAULT_SMALL_IMG_LENGTH;
 
                     String targetDirectory = request.getRealPath("/") + "page"+ File.separator + "upload";
 
                     /* 在临时目录生成压缩图 */
-                    String targetFilePath = FastDFSUtils.generateSmallPic(domainFS,uploadedFileId,targetDirectory,width,length);
-                    System.out.println("在临时目录生成压缩图 targetFilePath  = " + targetFilePath );
+                    String targetFilePath = fastDfsUtil.generateSmallPic(file.getBytes(),uploadedFileId,targetDirectory,width,length);
+                    logger.info("在临时目录生成压缩图 targetFilePath  = " + targetFilePath);
 
                     /* 上传压缩图 */
-                    String slaveUploadId = super.uploadSlaveFile(uploadedFileId,targetFilePath,width,length);
-                    System.out.println("上传压缩图后的slaveUploadId :" + slaveUploadId );
+                    String slaveUploadId = fastDfsUtil.uploadSlaveFile(uploadedFileId, targetFilePath, width, length);
+                    logger.info("上传压缩图后的slaveUploadId :" + slaveUploadId);
+
+                    /* 删除 本次 在临时目录生成压缩图  */
+                    FileHelper.deleteFromDirectory(uploadedFileId, targetDirectory, width, length);
                 }
             }
         } catch (Exception ex) {
             logger.error("上传文件过程中发生异常! message : " + ex.getMessage(),ex);
-        }finally {
-            if(null != super.trackerServer){
-                try {
-                    super.trackerServer.close();
-                } catch (IOException e) {
-                    logger.error("关闭FastDFS跟踪服务器时发生异常：" + e.getMessage(),e);
-                }
-            }
         }
         if(uploadedFileList.isEmpty()){
             upload = new UploadInfo();
